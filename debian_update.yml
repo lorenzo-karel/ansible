@@ -1,5 +1,5 @@
 ---
-- hosts: debian_servers
+- hosts: sandbox
   become: true
   tasks:
     - name: Update apt packages list
