@@ -1,0 +1,18 @@
+---
+- hosts: debian_servers
+  become: true
+  tasks:
+    - name: Update apt packages list
+      apt:
+        update_cache: yes
+
+    - name: Upgrade all installed packages
+      apt:
+        upgrade: dist
+
+    - name: Ensure essential packages are installed
+      apt:
+        name:
+          - vim
+          - git
+        state: present
