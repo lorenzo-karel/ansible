@@ -3,16 +3,51 @@
   become: true
   tasks:
     - name: Update apt packages list
-      apt:
-        update_cache: yes
+      command: sudo apt-get update
 
-    - name: Upgrade all installed packages
-      apt:
-        upgrade: dist
-
-    - name: Ensure essential packages are installed
+    - name: Install essential packages
       apt:
         name:
-          - vim
-          - git
+          - ca-certificates
+          - curl
+        state: present
+
+    - name: Create docker keyring directory
+      file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Download docker GPG key
+      command: sudo curl -fsSL https://download.docker.com/linux/debian/gpg -o /etc/apt/keyrings/docker.asc
+
+    - name: Set permissions for the downloaded GPG key
+      file:
+        src: /etc/apt/keyrings/docker.asc
+        dest: /etc/apt/keyrings/docker.asc
+        mode: '0644'
+        owner: root
+        group: root
+
+    - name: Add Docker repository to Apt sources list
+      blockinfile:
+        path: /etc/apt/sources.list.d/docker.list
+        create: yes
+        block: |
+          deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/debian $(. /etc/os-release && echo "$VERSION_CODENAME") stable
+          apt-get update
+
+    - name: Install Docker and related packages
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        state: present
+
+    - name: Install git
+      apt:
+        name: git
         state: present
